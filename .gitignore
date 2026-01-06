@@ -1,0 +1,64 @@
+node_modules
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Vaadin ###
+frontend/generated/
+node_modules/
+vite.generated.ts
+vite.config.ts.timestamp*
+types.d.ts
+tsconfig.json
+pnpm-lock.yaml
+pnpmfile.cjs
+package-lock.json
+package.json
+.pnpm-store/
+.vaadin/
+
+### Additional Maven ###
+.mvn/wrapper/maven-wrapper.properties
+!.mvn/wrapper/maven-wrapper.properties.sample
+dependency-reduced-pom.xml
+*.log
+.flattened-pom.xml
+
+### Additional IntelliJ IDEA ###
+out/
+.idea_modules/
+atlassian-ide-plugin.xml
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties

@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: health-hub-db
+    environment:
+      POSTGRES_DB: healthhub
+      POSTGRES_USER: healthhub
+      POSTGRES_PASSWORD: healthhub
+    ports:
+      - "5432:5432"
+    volumes:
+      - health-hub-data:/var/lib/postgresql/data
+
+volumes:
+  health-hub-data:

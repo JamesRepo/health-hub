@@ -46,6 +46,10 @@ package-lock.json
 package.json
 .pnpm-store/
 .vaadin/
+src/main/frontend/generated/
+src/main/resources/META-INF/VAADIN/config/flow-build-info.json
+src/main/resources/META-INF/VAADIN/webapp/
+src/main/resources/META-INF/VAADIN/static/
 
 ### Additional Maven ###
 .mvn/wrapper/maven-wrapper.properties

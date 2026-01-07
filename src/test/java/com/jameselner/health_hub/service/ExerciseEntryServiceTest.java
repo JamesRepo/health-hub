@@ -42,14 +42,11 @@ class ExerciseEntryServiceTest {
         entry.setEntryDate(date);
         entry.setActivityType(ActivityType.RUN);
         entry.setDurationMinutes(30);
-        entry.setSteps(5000);
-        entry.setStretching(true);
 
         secondEntry = new ExerciseEntry();
         secondEntry.setEntryDate(date);
         secondEntry.setActivityType(ActivityType.GYM);
         secondEntry.setDurationMinutes(60);
-        secondEntry.setStretching(false);
     }
 
     @Test

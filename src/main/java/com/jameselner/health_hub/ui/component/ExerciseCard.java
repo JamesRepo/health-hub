@@ -1,12 +1,16 @@
 package com.jameselner.health_hub.ui.component;
 
+import com.jameselner.health_hub.model.entity.ExerciseDailySummary;
 import com.jameselner.health_hub.model.entity.ExerciseEntry;
 import com.jameselner.health_hub.model.enums.ActivityType;
+import com.jameselner.health_hub.service.ExerciseDailySummaryService;
 import com.jameselner.health_hub.service.ExerciseEntryService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -19,13 +23,18 @@ import java.util.List;
 
 public class ExerciseCard extends VerticalLayout {
 
-    private final ExerciseEntryService service;
+    private final ExerciseEntryService entryService;
+    private final ExerciseDailySummaryService summaryService;
     private final VerticalLayout entriesLayout;
+    private final IntegerField stepsField;
+    private final Checkbox stretchingCheckbox;
     private final List<ExerciseEntryRow> entryRows = new ArrayList<>();
     private LocalDate currentDate;
+    private ExerciseDailySummary currentSummary;
 
-    public ExerciseCard(ExerciseEntryService service) {
-        this.service = service;
+    public ExerciseCard(ExerciseEntryService entryService, ExerciseDailySummaryService summaryService) {
+        this.entryService = entryService;
+        this.summaryService = summaryService;
 
         addClassName("card");
         getStyle()
@@ -36,6 +45,41 @@ public class ExerciseCard extends VerticalLayout {
         H3 title = new H3("Exercise");
         title.getStyle().set("margin-top", "0");
 
+        // Daily summary section
+        Span dailyLabel = new Span("Daily Summary");
+        dailyLabel.getStyle()
+                .set("font-size", "var(--lumo-font-size-s)")
+                .set("color", "var(--lumo-secondary-text-color)");
+
+        stepsField = new IntegerField();
+        stepsField.setLabel("Steps");
+        stepsField.setPlaceholder("steps");
+        stepsField.setWidth("120px");
+        stepsField.setMin(0);
+        stepsField.addValueChangeListener(e -> {
+            if (e.isFromClient()) {
+                saveSummary();
+            }
+        });
+
+        stretchingCheckbox = new Checkbox("Stretching");
+        stretchingCheckbox.addValueChangeListener(e -> {
+            if (e.isFromClient()) {
+                saveSummary();
+            }
+        });
+
+        HorizontalLayout summaryRow = new HorizontalLayout(stepsField, stretchingCheckbox);
+        summaryRow.setAlignItems(Alignment.BASELINE);
+
+        Hr divider = new Hr();
+
+        // Activities section
+        Span activitiesLabel = new Span("Activities");
+        activitiesLabel.getStyle()
+                .set("font-size", "var(--lumo-font-size-s)")
+                .set("color", "var(--lumo-secondary-text-color)");
+
         entriesLayout = new VerticalLayout();
         entriesLayout.setPadding(false);
         entriesLayout.setSpacing(true);
@@ -44,30 +88,50 @@ public class ExerciseCard extends VerticalLayout {
         addButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
         addButton.addClickListener(e -> addNewEntry());
 
-        add(title, entriesLayout, addButton);
+        add(title, dailyLabel, summaryRow, divider, activitiesLabel, entriesLayout, addButton);
     }
 
     public void setDate(LocalDate date) {
         this.currentDate = date;
-        loadEntries();
+        loadData();
     }
 
-    private void loadEntries() {
+    private void loadData() {
+        // Load daily summary
+        currentSummary = summaryService.findByDate(currentDate).orElse(null);
+        if (currentSummary != null) {
+            stepsField.setValue(currentSummary.getSteps());
+            stretchingCheckbox.setValue(currentSummary.isStretching());
+        } else {
+            stepsField.clear();
+            stretchingCheckbox.setValue(false);
+        }
+
+        // Load activities
         entriesLayout.removeAll();
         entryRows.clear();
 
-        List<ExerciseEntry> entries = service.findByDate(currentDate);
+        List<ExerciseEntry> entries = entryService.findByDate(currentDate);
         for (ExerciseEntry entry : entries) {
             addEntryRow(entry);
         }
+    }
+
+    private void saveSummary() {
+        if (currentSummary == null) {
+            currentSummary = new ExerciseDailySummary();
+            currentSummary.setEntryDate(currentDate);
+        }
+        currentSummary.setSteps(stepsField.getValue());
+        currentSummary.setStretching(stretchingCheckbox.getValue());
+        currentSummary = summaryService.save(currentSummary);
     }
 
     private void addNewEntry() {
         ExerciseEntry entry = new ExerciseEntry();
         entry.setEntryDate(currentDate);
         entry.setActivityType(ActivityType.OTHER);
-        entry.setStretching(false);
-        entry = service.save(entry);
+        entry = entryService.save(entry);
         addEntryRow(entry);
     }
 
@@ -78,7 +142,7 @@ public class ExerciseCard extends VerticalLayout {
     }
 
     private void removeEntry(ExerciseEntryRow row) {
-        service.delete(row.entry);
+        entryService.delete(row.entry);
         entryRows.remove(row);
         entriesLayout.remove(row);
     }
@@ -99,7 +163,7 @@ public class ExerciseCard extends VerticalLayout {
             activitySelect.addValueChangeListener(e -> {
                 if (e.isFromClient()) {
                     entry.setActivityType(e.getValue());
-                    service.save(entry);
+                    entryService.save(entry);
                 }
             });
 
@@ -111,28 +175,7 @@ public class ExerciseCard extends VerticalLayout {
             durationField.addValueChangeListener(e -> {
                 if (e.isFromClient()) {
                     entry.setDurationMinutes(e.getValue());
-                    service.save(entry);
-                }
-            });
-
-            IntegerField stepsField = new IntegerField();
-            stepsField.setPlaceholder("steps");
-            stepsField.setWidth("90px");
-            stepsField.setMin(0);
-            stepsField.setValue(entry.getSteps());
-            stepsField.addValueChangeListener(e -> {
-                if (e.isFromClient()) {
-                    entry.setSteps(e.getValue());
-                    service.save(entry);
-                }
-            });
-
-            Checkbox stretchingCheckbox = new Checkbox("Stretch");
-            stretchingCheckbox.setValue(entry.isStretching());
-            stretchingCheckbox.addValueChangeListener(e -> {
-                if (e.isFromClient()) {
-                    entry.setStretching(e.getValue());
-                    service.save(entry);
+                    entryService.save(entry);
                 }
             });
 
@@ -140,7 +183,7 @@ public class ExerciseCard extends VerticalLayout {
             deleteButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
             deleteButton.addClickListener(e -> removeEntry(this));
 
-            add(activitySelect, durationField, stepsField, stretchingCheckbox, deleteButton);
+            add(activitySelect, durationField, deleteButton);
         }
     }
 

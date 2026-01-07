@@ -28,10 +28,4 @@ public class ExerciseEntry extends AbstractBaseEntity {
 
     @Column(name = "duration_minutes")
     private Integer durationMinutes;
-
-    @Column(name = "steps")
-    private Integer steps;
-
-    @Column(name = "stretching", nullable = false)
-    private boolean stretching;
 }

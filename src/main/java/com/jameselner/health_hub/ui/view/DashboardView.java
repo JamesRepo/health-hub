@@ -1,6 +1,7 @@
 package com.jameselner.health_hub.ui.view;
 
 import com.jameselner.health_hub.service.AlcoholEntryService;
+import com.jameselner.health_hub.service.ExerciseDailySummaryService;
 import com.jameselner.health_hub.service.ExerciseEntryService;
 import com.jameselner.health_hub.service.MoodEntryService;
 import com.jameselner.health_hub.service.SexEntryService;
@@ -41,6 +42,7 @@ public class DashboardView extends VerticalLayout {
             MoodEntryService moodService,
             AlcoholEntryService alcoholService,
             ExerciseEntryService exerciseService,
+            ExerciseDailySummaryService exerciseSummaryService,
             SleepEntryService sleepService,
             SexEntryService sexService) {
 
@@ -83,7 +85,7 @@ public class DashboardView extends VerticalLayout {
 
         moodCard = new MoodCard(moodService);
         alcoholCard = new AlcoholCard(alcoholService);
-        exerciseCard = new ExerciseCard(exerciseService);
+        exerciseCard = new ExerciseCard(exerciseService, exerciseSummaryService);
         sleepCard = new SleepCard(sleepService);
         sexCard = new SexCard(sexService);
 

@@ -1,7 +1,9 @@
 package com.jameselner.health_hub.ui.view;
 
+import com.jameselner.health_hub.model.entity.ExerciseDailySummary;
 import com.jameselner.health_hub.model.entity.ExerciseEntry;
 import com.jameselner.health_hub.model.enums.ActivityType;
+import com.jameselner.health_hub.service.ExerciseDailySummaryService;
 import com.jameselner.health_hub.service.ExerciseEntryService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -33,14 +35,16 @@ import java.util.Map;
 @PageTitle("Exercise History | Health Hub")
 public class ExerciseView extends VerticalLayout {
 
-    private final ExerciseEntryService service;
+    private final ExerciseEntryService entryService;
+    private final ExerciseDailySummaryService summaryService;
     private final VerticalLayout calendarContainer;
     private final Span yearLabel;
     private final Span statsLabel;
     private int currentYear;
 
-    public ExerciseView(ExerciseEntryService service) {
-        this.service = service;
+    public ExerciseView(ExerciseEntryService entryService, ExerciseDailySummaryService summaryService) {
+        this.entryService = entryService;
+        this.summaryService = summaryService;
         this.currentYear = Year.now().getValue();
 
         setSizeFull();
@@ -145,17 +149,16 @@ public class ExerciseView extends VerticalLayout {
     private void refreshCalendar() {
         calendarContainer.removeAll();
 
-        // Load all exercise entries for the year
+        // Load all exercise entries and daily summaries for the year
         LocalDate yearStart = LocalDate.of(currentYear, 1, 1);
         LocalDate yearEnd = LocalDate.of(currentYear, 12, 31);
-        List<ExerciseEntry> entries = service.findByDateRange(yearStart, yearEnd);
+        List<ExerciseEntry> entries = entryService.findByDateRange(yearStart, yearEnd);
+        List<ExerciseDailySummary> summaries = summaryService.findByDateRange(yearStart, yearEnd);
 
         // Group entries by date
         Map<LocalDate, List<ExerciseEntry>> exerciseMap = new HashMap<>();
         int totalWorkouts = 0;
         int totalMinutes = 0;
-        int totalSteps = 0;
-        int stretchDays = 0;
 
         for (ExerciseEntry entry : entries) {
             exerciseMap.computeIfAbsent(entry.getEntryDate(), k -> new ArrayList<>()).add(entry);
@@ -163,14 +166,19 @@ public class ExerciseView extends VerticalLayout {
             if (entry.getDurationMinutes() != null) {
                 totalMinutes += entry.getDurationMinutes();
             }
-            if (entry.getSteps() != null) {
-                totalSteps += entry.getSteps();
-            }
         }
 
-        // Count stretch days
-        for (List<ExerciseEntry> dayEntries : exerciseMap.values()) {
-            if (dayEntries.stream().anyMatch(ExerciseEntry::isStretching)) {
+        // Create summary map and calculate totals from summaries
+        Map<LocalDate, ExerciseDailySummary> summaryMap = new HashMap<>();
+        int totalSteps = 0;
+        int stretchDays = 0;
+
+        for (ExerciseDailySummary summary : summaries) {
+            summaryMap.put(summary.getEntryDate(), summary);
+            if (summary.getSteps() != null) {
+                totalSteps += summary.getSteps();
+            }
+            if (summary.isStretching()) {
                 stretchDays++;
             }
         }
@@ -181,11 +189,12 @@ public class ExerciseView extends VerticalLayout {
 
         // Create calendar for each month
         for (Month month : Month.values()) {
-            calendarContainer.add(createMonthCalendar(month, exerciseMap));
+            calendarContainer.add(createMonthCalendar(month, exerciseMap, summaryMap));
         }
     }
 
-    private VerticalLayout createMonthCalendar(Month month, Map<LocalDate, List<ExerciseEntry>> exerciseMap) {
+    private VerticalLayout createMonthCalendar(Month month, Map<LocalDate, List<ExerciseEntry>> exerciseMap,
+                                               Map<LocalDate, ExerciseDailySummary> summaryMap) {
         VerticalLayout monthLayout = new VerticalLayout();
         monthLayout.setPadding(false);
         monthLayout.setSpacing(false);
@@ -260,8 +269,9 @@ public class ExerciseView extends VerticalLayout {
 
                 if (date.getMonth() == month) {
                     List<ExerciseEntry> dayEntries = exerciseMap.get(date);
+                    ExerciseDailySummary daySummary = summaryMap.get(date);
                     if (dayEntries != null && !dayEntries.isEmpty()) {
-                        cell.add(createActivityIndicators(dayEntries));
+                        cell.add(createActivityIndicators(dayEntries, daySummary));
                     }
                 }
 
@@ -276,7 +286,7 @@ public class ExerciseView extends VerticalLayout {
         return monthLayout;
     }
 
-    private Div createActivityIndicators(List<ExerciseEntry> entries) {
+    private Div createActivityIndicators(List<ExerciseEntry> entries, ExerciseDailySummary summary) {
         Div container = new Div();
         container.getStyle()
                 .set("display", "flex")
@@ -286,7 +296,7 @@ public class ExerciseView extends VerticalLayout {
                 .set("align-items", "center")
                 .set("max-width", "70px");
 
-        boolean hasStretching = entries.stream().anyMatch(ExerciseEntry::isStretching);
+        boolean hasStretching = summary != null && summary.isStretching();
 
         for (ExerciseEntry entry : entries) {
             Div dot = new Div();
@@ -296,19 +306,15 @@ public class ExerciseView extends VerticalLayout {
                     .set("border-radius", "50%")
                     .set("background-color", getActivityColor(entry.getActivityType()));
 
-            // Add pink border if this entry had stretching
-            if (entry.isStretching()) {
-                dot.getStyle().set("border", "2px solid #e91e63");
-            }
-
             container.add(dot);
         }
 
-        // If day had stretching, add border to container
+        // If day had stretching, add pink highlight to container
         if (hasStretching) {
             container.getStyle()
                     .set("padding", "2px")
                     .set("border-radius", "4px")
+                    .set("border", "2px solid #e91e63")
                     .set("background-color", "rgba(233, 30, 99, 0.1)");
         }
 

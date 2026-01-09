@@ -32,7 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 
 @Route("exercise")
-@PageTitle("Exercise History | Health Hub")
+@PageTitle("Health Hub")
 public class ExerciseView extends VerticalLayout {
 
     private final ExerciseEntryService entryService;

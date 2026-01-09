@@ -29,7 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Route("alcohol")
-@PageTitle("Alcohol History | Health Hub")
+@PageTitle("Health Hub")
 public class AlcoholView extends VerticalLayout {
 
     private final AlcoholEntryService service;

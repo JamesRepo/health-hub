@@ -22,14 +22,13 @@ import java.time.Month;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
-import java.time.temporal.WeekFields;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Route("mood")
-@PageTitle("Mood History | Health Hub")
+@PageTitle("Health Hub")
 public class MoodView extends VerticalLayout {
 
     private final MoodEntryService service;

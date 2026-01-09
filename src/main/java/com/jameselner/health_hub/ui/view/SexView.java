@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Route("sex")
-@PageTitle("Sex History | Health Hub")
+@PageTitle("Health Hub")
 public class SexView extends VerticalLayout {
 
     private final SexEntryService service;

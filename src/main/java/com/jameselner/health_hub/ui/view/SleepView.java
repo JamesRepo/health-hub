@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Route("sleep")
-@PageTitle("Sleep History | Health Hub")
+@PageTitle("Health Hub")
 public class SleepView extends VerticalLayout {
 
     private final SleepEntryService service;

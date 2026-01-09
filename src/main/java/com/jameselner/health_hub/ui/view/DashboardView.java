@@ -27,7 +27,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @Route("")
-@PageTitle("Dashboard | Health Hub")
+@PageTitle("Health Hub")
 public class DashboardView extends VerticalLayout {
 
     private final MoodCard moodCard;

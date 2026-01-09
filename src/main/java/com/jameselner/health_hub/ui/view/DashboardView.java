@@ -11,6 +11,8 @@ import com.jameselner.health_hub.ui.component.ExerciseCard;
 import com.jameselner.health_hub.ui.component.MoodCard;
 import com.jameselner.health_hub.ui.component.SexCard;
 import com.jameselner.health_hub.ui.component.SleepCard;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -100,6 +102,10 @@ public class DashboardView extends VerticalLayout {
         exerciseCard.setWidth("100%");
 
         add(title, dateNav, topRow, bottomRow);
+
+        // Keyboard shortcuts for date navigation
+        Shortcuts.addShortcutListener(this, () -> changeDate(-1), Key.ARROW_LEFT);
+        Shortcuts.addShortcutListener(this, () -> changeDate(1), Key.ARROW_RIGHT);
 
         updateDateLabel();
         updateCards(LocalDate.now());

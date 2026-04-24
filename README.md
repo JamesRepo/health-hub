@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🫀 Health Hub
 
-## Getting Started
+Personal health metrics tracker built with Next.js 15. Tracks mood, sleep, alcohol, exercise, and intimacy daily — with Garmin Connect integration and AI-powered insights.
 
-First, run the development server:
+## What it Does
+
+- **Daily logging** — quick entry form (mood, sleep, drinks, exercise, sex) optimised for phone use
+- **Garmin sync** — sleep stages, steps, resting HR, stress, Body Battery, HRV pulled from Garmin Connect nightly
+- **Calendar heat maps** — visual history of any metric across the year
+- **Analytics dashboards** — alcohol trends, exercise breakdown, mood/sleep patterns, cross-metric correlations
+- **AI insights** — weekly/monthly AI-generated digests analysing patterns in your data
+- **Anomaly detection** — flags when metrics deviate from your personal baselines
+- **Correlation explorer** — interactive query builder for compound questions ("Does exercise cancel out a hangover?")
+- **Personal profile** — "What Works For Me" summary distilled from your entire dataset
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 15 (App Router) |
+| ORM | Prisma |
+| Database | PostgreSQL (`health_hub` schema on shared instance) |
+| UI | Tailwind CSS + shadcn/ui |
+| Charts | Recharts |
+| AI | Anthropic SDK |
+| Garmin | python-garminconnect (Python cron job) |
+| Auth | NextAuth.js v5 (single-user credentials) |
+| Hosting | Raspberry Pi, PM2, Caddy |
+
+## Setup
+
+### Prerequisites
+
+- Node.js 20+
+- PostgreSQL instance with a `health_hub` schema created
+- Python 3.11+ (for Garmin sync and data import scripts)
+
+### Install
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repo-url> health-hub
+cd health-hub
+npm install
+cp .env.example .env.local  # Edit with your values
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Database
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sql
+-- Run on your PostgreSQL instance
+CREATE SCHEMA IF NOT EXISTS health_hub;
+CREATE USER healthhub_user WITH PASSWORD 'your-password';
+GRANT ALL ON SCHEMA health_hub TO healthhub_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA health_hub GRANT ALL ON TABLES TO healthhub_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA health_hub GRANT ALL ON SEQUENCES TO healthhub_user;
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx prisma migrate dev    # Create tables
+npx prisma db seed        # Seed activity types
+```
 
-## Learn More
+### Run
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run dev               # http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Deploy to Pi
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+bash scripts/deploy.sh    # Builds, rsyncs, restarts PM2
+```
 
-## Deploy on Vercel
+## Data Import
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+To import existing data from a Numbers/Excel spreadsheet:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Export spreadsheet as CSV first
+pip install psycopg2-binary python-dateutil
+python3 scripts/import-spreadsheet.py --csv data.csv --db "$DATABASE_URL" --dry-run  # Validate
+python3 scripts/import-spreadsheet.py --csv data.csv --db "$DATABASE_URL"             # Import
+```
+
+## Garmin Sync
+
+```bash
+# One-time setup on Pi
+pip install garminconnect psycopg2-binary --break-system-packages
+
+# First login (interactive, saves tokens)
+python3 scripts/garmin-sync.py  # Syncs yesterday
+
+# Cron job (add to crontab)
+0 6 * * * cd /home/pi/health-hub/scripts && python3 garmin-sync.py >> /var/log/garmin-sync.log 2>&1
+```
+
+## Project Documentation
+
+Detailed plans and specs live in `docs/`:
+
+- `PROJECT_PLAN.md` — Full project plan (architecture, schema, features, Garmin integration, AI insights)
+- `EXECUTION_PLAN.md` — Step-by-step build instructions with AI prompts
+- `CLAUDE_DESIGN_ADDENDUM.md` — Claude Design prototyping workflow for each UI page

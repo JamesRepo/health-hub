@@ -160,7 +160,7 @@ health-hub/
 │   └── export.ts                     # Export action
 ├── prisma/
 │   ├── schema.prisma
-│   ├── seed.mjs                      # Activity type seed data
+│   ├── seed.ts                       # Activity type seed data
 │   └── migrations/
 ├── scripts/
 │   ├── import-spreadsheet.py         # One-off migration from Numbers

@@ -2,6 +2,9 @@
   "name": "health-hub",
   "version": "0.1.0",
   "private": true,
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  },
   "scripts": {
     "db:start": "docker compose --env-file .env.local up -d postgres",
     "db:stop": "docker compose --env-file .env.local stop postgres",
@@ -47,6 +50,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

@@ -50,6 +50,7 @@ docs/                    → Project plan, execution plan, design decisions
 - **Server Components by default.** Dashboard, analytics, history, and profile pages fetch data via Prisma directly — no API round-trip. Only interactive elements (entry form, chart interactions, toggles) are Client Components.
 - **Server Actions for mutations.** Creating/updating daily logs uses Server Actions, not API routes. Keeps form logic co-located with the component.
 - **API routes for chart data.** Recharts needs JSON endpoints. These live in `app/api/analytics/`.
+- **NextAuth credentials for app access.** `lib/auth.ts` is the shared source for `auth`, `signIn`, `signOut`, and route handlers. `app/api/auth/[...nextauth]/route.ts` must re-export `handlers.GET` and `handlers.POST`.
 - **Shared Postgres instance.** The Pi runs Postgres for other apps. Health Hub uses its own schema (`health_hub`), configured via Prisma's `schemas` option. Never touch tables outside this schema.
 - **Garmin sync is a separate Python process.** It writes directly to Postgres via psycopg2, not through the Next.js app. Runs as a cron job at 6am.
 - **Manual entries always win.** Garmin data uses `COALESCE(existing, garmin_value)` — manually logged data is never overwritten by sync.
@@ -60,6 +61,7 @@ docs/                    → Project plan, execution plan, design decisions
 - Named exports for components, default export for page components.
 - Prisma queries go in Server Components or `lib/` functions — never in Client Components.
 - Server Actions live in `actions/` with `"use server"` directive.
+- Auth form posts should go through Server Actions in `actions/auth.ts`, not ad hoc client fetches.
 - Use shadcn/ui components from `components/ui/` — don't build custom versions of things shadcn already provides.
 - Zod for input validation on Server Actions and API routes.
 - Date handling with `date-fns`. Dates stored as `Date` type in Prisma, formatted for display.

@@ -12,6 +12,7 @@ Personal health metrics tracker built with Next.js 15. Tracks mood, sleep, alcoh
 - **Anomaly detection** — flags when metrics deviate from your personal baselines
 - **Correlation explorer** — interactive query builder for compound questions ("Does exercise cancel out a hangover?")
 - **Personal profile** — "What Works For Me" summary distilled from your entire dataset
+- **Password-protected access** — single-user credentials login with redirect back to the page you were trying to open
 
 ## Tech Stack
 

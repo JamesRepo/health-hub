@@ -1,11 +1,4 @@
-import { notImplementedRoute } from "@/lib/http";
+import { handlers } from "@/lib/auth";
 
-// NextAuth route handlers for authentication requests.
-
-export async function GET() {
-  return notImplementedRoute("Authentication API");
-}
-
-export async function POST() {
-  return notImplementedRoute("Authentication API");
-}
+export const GET = handlers.GET;
+export const POST = handlers.POST;

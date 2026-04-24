@@ -41,7 +41,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <main className="flex min-h-screen items-center justify-center bg-[#0a0a0a] px-4 py-10">
       <Card className="w-full max-w-sm border-[#222222] bg-[#111111] text-white">
         <CardHeader className="space-y-2">
-          <CardTitle>Health Hub</CardTitle>
+          <CardTitle className="text-xl">❤️‍🩹 Health Hub</CardTitle>
           <CardDescription>
             Enter your password to access your health data.
           </CardDescription>
@@ -66,7 +66,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             {errorMessage ? (
               <p className="text-sm text-red-500">{errorMessage}</p>
             ) : null}
-            <Button className="w-full" type="submit">
+            <Button className="w-full bg-[#22c55e] text-white hover:bg-[#16a34a]" type="submit">
               Sign in
             </Button>
           </form>

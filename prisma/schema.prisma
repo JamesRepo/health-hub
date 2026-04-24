@@ -1,1 +1,153 @@
-// Prisma schema for the health_hub database models.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["health_hub"]
+}
+
+model ActivityType {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique @db.VarChar(50)
+  emoji     String?  @db.VarChar(10)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  exercises ExerciseEntry[]
+
+  @@map("activity_type")
+  @@schema("health_hub")
+}
+
+model DailyLog {
+  id      Int      @id @default(autoincrement())
+  logDate DateTime @unique @map("log_date") @db.Date
+
+  // Mood: 1=bad, 2=ok, 3=good
+  mood Int? @db.SmallInt
+  // Sleep quality: 1=bad, 2=ok, 3=good
+  sleepQuality Int? @map("sleep_quality") @db.SmallInt
+  // Alcohol: number of drinks (0-10+)
+  alcoholUnits Int? @map("alcohol_units") @db.SmallInt
+  // Sex activity category
+  sexActivity String? @map("sex_activity") @db.VarChar(20)
+
+  // Exercise summary (denormalised)
+  totalExerciseSeconds Int?    @map("total_exercise_seconds")
+  stepCount            Int?    @map("step_count")
+  didStretch           Boolean @default(false) @map("did_stretch")
+
+  // Garmin-sourced fields (auto-populated by sync script)
+  garminSleepScore   Int? @map("garmin_sleep_score")   // Garmin's 0-100 sleep score
+  garminSleepSeconds Int? @map("garmin_sleep_seconds") // Total sleep duration
+  garminDeepSeconds  Int? @map("garmin_deep_seconds")  // Deep sleep duration
+  garminLightSeconds Int? @map("garmin_light_seconds") // Light sleep duration
+  garminRemSeconds   Int? @map("garmin_rem_seconds")   // REM sleep duration
+  garminAwakeSeconds Int? @map("garmin_awake_seconds") // Awake during sleep
+  garminRestingHr    Int? @map("garmin_resting_hr")    // Resting heart rate
+  garminStressAvg    Int? @map("garmin_stress_avg")    // Average stress level (0-100)
+  garminBodyBattery  Int? @map("garmin_body_battery")  // End-of-day Body Battery
+  garminHrvStatus    Int? @map("garmin_hrv_status")    // HRV status (ms)
+
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  exercises     ExerciseEntry[]
+  tags          DailyTag[]
+  customMetrics CustomMetric[]
+
+  @@map("daily_log")
+  @@schema("health_hub")
+}
+
+model ExerciseEntry {
+  id              Int  @id @default(autoincrement())
+  dailyLogId      Int  @map("daily_log_id")
+  activityTypeId  Int  @map("activity_type_id")
+  slotNumber      Int  @map("slot_number") @db.SmallInt
+  durationSeconds Int? @map("duration_seconds")
+  notes           String?
+
+  dailyLog     DailyLog     @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  activityType ActivityType @relation(fields: [activityTypeId], references: [id])
+
+  @@unique([dailyLogId, slotNumber])
+  @@map("exercise_entry")
+  @@schema("health_hub")
+}
+
+model DailyTag {
+  id         Int    @id @default(autoincrement())
+  dailyLogId Int    @map("daily_log_id")
+  tag        String @db.VarChar(50)
+
+  dailyLog DailyLog @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@unique([dailyLogId, tag])
+  @@map("daily_tag")
+  @@schema("health_hub")
+}
+
+model CustomMetric {
+  id          Int      @id @default(autoincrement())
+  dailyLogId  Int      @map("daily_log_id")
+  metricName  String   @map("metric_name") @db.VarChar(100)
+  metricValue Decimal? @map("metric_value")
+  metricText  String?  @map("metric_text")
+
+  dailyLog DailyLog @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@unique([dailyLogId, metricName])
+  @@map("custom_metric")
+  @@schema("health_hub")
+}
+
+/// AI-generated insight digests (weekly, monthly, ad-hoc)
+model AiDigest {
+  id          Int      @id @default(autoincrement())
+  periodType  String   @map("period_type") @db.VarChar(20) // 'weekly', 'monthly', 'adhoc'
+  periodStart DateTime @map("period_start") @db.Date
+  periodEnd   DateTime @map("period_end") @db.Date
+  summary     String // The AI-generated narrative
+  highlights  Json? // Structured findings (for UI cards)
+  model       String   @db.VarChar(50) // Which Claude model generated this
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([periodType, periodStart])
+  @@map("ai_digest")
+  @@schema("health_hub")
+}
+
+/// Detected anomalies - when a metric deviates from personal baseline
+model Anomaly {
+  id          Int      @id @default(autoincrement())
+  detectedAt  DateTime @map("detected_at") @db.Date
+  metric      String   @db.VarChar(50) // 'alcohol', 'mood', 'sleep', 'exercise'
+  description String // Human-readable anomaly description
+  severity    String   @db.VarChar(20) // 'info', 'notable', 'significant'
+  value       Decimal? // The anomalous value
+  baseline    Decimal? // What the baseline was
+  dismissed   Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("anomaly")
+  @@schema("health_hub")
+}
+
+/// Garmin sync log - tracks each sync run for debugging/monitoring
+model GarminSync {
+  id          Int      @id @default(autoincrement())
+  syncDate    DateTime @map("sync_date") @db.Date // Which day's data was synced
+  status      String   @db.VarChar(20) // 'success', 'partial', 'failed'
+  sleepSync   Boolean  @default(false) @map("sleep_sync")
+  stepsSync   Boolean  @default(false) @map("steps_sync")
+  actSync     Boolean  @default(false) @map("act_sync") // Activities synced
+  metricsSync Boolean  @default(false) @map("metrics_sync") // HR, stress, HRV, BB
+  errors      String? // Error details if any
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([syncDate])
+  @@map("garmin_sync")
+  @@schema("health_hub")
+}

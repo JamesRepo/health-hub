@@ -91,7 +91,7 @@ Dark mode is the default.
 
 ## Gotchas
 
-- The Prisma schema uses `previewFeatures = ["multiSchema"]` for the `health_hub` schema isolation. This is required.
+- The `health_hub` schema isolation uses Prisma's multi-schema support via `schemas = ["health_hub"]` plus `@@schema("health_hub")`.
 - `next.config.ts` must set `output: "standalone"` for Raspberry Pi deployment.
 - NextAuth v5 imports differ from v4 — use `import { auth } from "@/lib/auth"`, not `getServerSession`.
 - The Garmin sync script (`scripts/garmin-sync.py`) is Python, not TypeScript. Don't try to import it or call it from Next.js.

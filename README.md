@@ -32,7 +32,7 @@ Personal health metrics tracker built with Next.js 15. Tracks mood, sleep, alcoh
 ### Prerequisites
 
 - Node.js 20+
-- PostgreSQL instance with a `health_hub` schema created
+- Docker with Compose support
 - Python 3.11+ (for Garmin sync and data import scripts)
 
 ### Install
@@ -42,21 +42,25 @@ git clone <repo-url> health-hub
 cd health-hub
 npm install
 cp .env.example .env.local  # Edit with your values
+npm run db:start
 ```
 
 ### Database
 
-```sql
--- Run on your PostgreSQL instance
-CREATE SCHEMA IF NOT EXISTS health_hub;
-CREATE USER healthhub_user WITH PASSWORD 'your-password';
-GRANT ALL ON SCHEMA health_hub TO healthhub_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA health_hub GRANT ALL ON TABLES TO healthhub_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA health_hub GRANT ALL ON SEQUENCES TO healthhub_user;
+The local Postgres container reads its settings from `.env.local`, so keep these values aligned:
+
+```env
+POSTGRES_DB=health_hub
+POSTGRES_USER=healthhub_user
+POSTGRES_PASSWORD=healthhub_password
+POSTGRES_PORT=5432
+DATABASE_URL=postgresql://healthhub_user:healthhub_password@localhost:5432/health_hub?schema=health_hub
 ```
 
 ```bash
-npx prisma migrate dev    # Create tables
+npm run db:start          # or: docker compose --env-file .env.local up -d postgres
+npx prisma migrate dev --name init
+npx prisma generate
 npx prisma db seed        # Seed activity types
 ```
 
@@ -64,6 +68,13 @@ npx prisma db seed        # Seed activity types
 
 ```bash
 npm run dev               # http://localhost:3000
+```
+
+### Stop the Database
+
+```bash
+npm run db:stop           # Stop the container
+npm run db:down           # Stop and remove the container
 ```
 
 ### Deploy to Pi

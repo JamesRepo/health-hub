@@ -19,6 +19,7 @@ Personal health metrics tracker. Single-user Next.js app on a Raspberry Pi. Trac
 npm run dev              # Start dev server (localhost:3000)
 npm run build            # Production build (standalone output)
 npm run lint             # ESLint
+npm run test:unit        # Unit tests (Vitest)
 npx prisma migrate dev   # Create/apply migration in dev
 npx prisma migrate deploy # Apply migrations in production (Pi)
 npx prisma db seed       # Seed activity types
@@ -96,6 +97,8 @@ Dark mode is the default.
 - The `health_hub` schema isolation uses Prisma's multi-schema support via `schemas = ["health_hub"]` plus `@@schema("health_hub")`.
 - `next.config.ts` must set `output: "standalone"` for Raspberry Pi deployment.
 - NextAuth v5 imports differ from v4 — use `import { auth } from "@/lib/auth"`, not `getServerSession`.
+- Middleware protects all app routes except `/login` and `/api/auth/*`. Keep that exemption set intact or sign-in will break.
+- Login `callbackUrl` values must stay internal relative paths (`/history?...`), not absolute URLs.
 - The Garmin sync script (`scripts/garmin-sync.py`) is Python, not TypeScript. Don't try to import it or call it from Next.js.
 - Exercise time is stored in seconds (`totalExerciseSeconds`, `durationSeconds`), not minutes. Convert for display.
 - Mood and sleep are integers 1-3, not strings. 1=bad, 2=ok, 3=good.

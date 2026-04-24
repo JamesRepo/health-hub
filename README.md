@@ -71,6 +71,30 @@ npx prisma db seed        # Seed activity types
 npm run dev               # http://localhost:3000
 ```
 
+### Authentication
+
+Health Hub uses a single password via NextAuth credentials auth:
+
+- Unauthenticated requests to app pages are redirected to `/login`
+- Protected deep links keep a relative `callbackUrl` so login returns you to the original page
+- `/` redirects to `/login` without a callback target
+- `/login` and `/api/auth/*` stay public so the sign-in flow can complete
+- Sessions use JWTs with a 30-day max age
+
+Add these auth env vars to `.env.local`:
+
+```env
+AUTH_PASSWORD=your-single-user-password
+NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
+NEXTAUTH_URL=http://localhost:3000
+```
+
+### Testing
+
+```bash
+npm run test:unit         # Vitest unit tests for auth flow and middleware
+```
+
 ### Stop the Database
 
 ```bash

@@ -17,6 +17,7 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "check": "npm run lint && npm run typecheck",
+    "test:unit": "vitest run",
     "test:prisma-bootstrap": "node --test tests/prisma-bootstrap.test.mjs",
     "test:prisma-seed": "node --import tsx --test tests/prisma-seed.test.ts"
   },
@@ -52,6 +53,7 @@
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.5"
   }
 }

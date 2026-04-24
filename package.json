@@ -17,7 +17,8 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "check": "npm run lint && npm run typecheck",
-    "test:prisma-bootstrap": "node --test tests/prisma-bootstrap.test.mjs"
+    "test:prisma-bootstrap": "node --test tests/prisma-bootstrap.test.mjs",
+    "test:prisma-seed": "node --import tsx --test tests/prisma-seed.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.0",

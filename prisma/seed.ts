@@ -8,17 +8,25 @@ loadEnvConfig(process.cwd());
 
 export const ACTIVITY_TYPES = [
   { name: "Run", emoji: "🏃" },
-  { name: "Gym", emoji: "🏋️" },
+  { name: "Gym", emoji: "💪" },
   { name: "Football", emoji: "⚽" },
   { name: "Core", emoji: "🧘" },
   { name: "Swim", emoji: "🏊" },
   { name: "Cycle", emoji: "🚴" },
   { name: "Hike", emoji: "🥾" },
   { name: "Walk", emoji: "🚶" },
-  { name: "Yoga", emoji: "🧘‍♂️" },
-  { name: "Pilates", emoji: "🤸" },
+  { name: "Yoga", emoji: "🧘‍♀️" },
+  { name: "Pilates", emoji: null },
   { name: "Golf", emoji: "⛳" },
   { name: "Tennis", emoji: "🎾" },
+  { name: "Basketball", emoji: "🏀" },
+  { name: "Boxing", emoji: "🥊" },
+  { name: "Climbing", emoji: "🧗" },
+  { name: "Dance", emoji: "💃" },
+  { name: "Rowing", emoji: "🚣" },
+  { name: "Ski", emoji: "⛷️" },
+  { name: "Stretch", emoji: null },
+  { name: "Other", emoji: null },
 ] as const;
 
 type SeedActivityType = (typeof ACTIVITY_TYPES)[number];

@@ -34,4 +34,4 @@ Single-user personal health tracker. Next.js 15 App Router + Prisma + PostgreSQL
 - Mood/Sleep: `Int` 1=bad, 2=ok, 3=good (not strings, not 0-based)
 - Alcohol: `Int` drink count, `null` = not logged, `0` = zero drinks
 - Exercise time: stored in seconds, display as HH:MM:SS
-- Sex activity: `String` enum — "Partner", "Solo", "Variant", "None", "Period"
+- Sex activity: `String` enum — "Good", "Bad", "Solo", "None"
